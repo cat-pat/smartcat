@@ -22,6 +22,7 @@ pub enum Api {
     Openai,
     AzureOpenai,
     Cerebras,
+    G4F,
 }
 
 impl FromStr for Api {
@@ -36,6 +37,7 @@ impl FromStr for Api {
             "groq" => Ok(Api::Groq),
             "anthropic" => Ok(Api::Anthropic),
             "cerebras" => Ok(Api::Cerebras),
+            "g4f" => Ok(Api::G4F),
             _ => Err(()),
         }
     }
@@ -51,6 +53,7 @@ impl ToString for Api {
             Api::Groq => "groq".to_string(),
             Api::Anthropic => "anthropic".to_string(),
             Api::Cerebras => "cerebras".to_string(),
+            Api::G4F => "g4f".to_string(),
             v => panic!(
                 "{:?} is not implemented, use one among {:?}",
                 v,
@@ -192,6 +195,17 @@ impl ApiConfig {
             timeout_seconds: None,
         }
     }
+
+    pub(super) fn g4f() -> Self {
+        ApiConfig {
+            api_key_command: None,
+            api_key: None,
+            url: String::from("http://localhost:1337/v1/chat/completions"),
+            default_model: Some(String::from("gpt-4")),
+            version: None,
+            timeout_seconds: None,
+        }
+    }
 }
 
 pub(super) fn api_keys_path() -> PathBuf {
@@ -207,6 +221,7 @@ pub(super) fn generate_api_keys_file() -> std::io::Result<()> {
     api_config.insert(Api::Groq.to_string(), ApiConfig::groq());
     api_config.insert(Api::Anthropic.to_string(), ApiConfig::anthropic());
     api_config.insert(Api::Cerebras.to_string(), ApiConfig::cerebras());
+    api_config.insert(Api::G4F.to_string(), ApiConfig::g4f());
 
     // Default, should override one of the above
     api_config.insert(Prompt::default().api.to_string(), ApiConfig::default());

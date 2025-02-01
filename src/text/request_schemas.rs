@@ -13,6 +13,22 @@ pub(super) struct OpenAiPrompt {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub(super) struct G4FPrompt {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider_api_key: Option<String>,
+    pub model: String,
+    pub messages: Vec<Message>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub web_search: Option<bool>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub(super) struct AnthropicPrompt {
     pub model: String,
     pub messages: Vec<Message>,
@@ -32,6 +48,22 @@ impl From<Prompt> for OpenAiPrompt {
             messages: prompt.messages,
             temperature: prompt.temperature,
             stream: prompt.stream,
+        }
+    }
+}
+
+impl From<Prompt> for G4FPrompt {
+    fn from(prompt: Prompt) -> G4FPrompt {
+        G4FPrompt {
+            provider: prompt.provider,
+            provider_api_key: prompt.provider_api_key,
+            model: prompt
+                .model
+                .expect("model must be specified either in the api config or in the prompt config"),
+            messages: prompt.messages,
+            temperature: prompt.temperature,
+            stream: prompt.stream,
+            web_search: prompt.web_search,
         }
     }
 }

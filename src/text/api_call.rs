@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use super::request_schemas::{AnthropicPrompt, OpenAiPrompt};
+use super::request_schemas::{AnthropicPrompt, G4FPrompt, OpenAiPrompt};
 use super::response_schemas::{AnthropicResponse, OllamaResponse, OpenAiResponse};
 
 use crate::config::{
@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 enum PromptFormat {
     OpenAi(OpenAiPrompt),
     Anthropic(AnthropicPrompt),
+    G4F(G4FPrompt),
 }
 
 pub fn post_prompt_and_get_answer(
@@ -53,6 +54,7 @@ pub fn post_prompt_and_get_answer(
             PromptFormat::OpenAi(OpenAiPrompt::from(prompt.clone()))
         }
         Api::Anthropic => PromptFormat::Anthropic(AnthropicPrompt::from(prompt.clone())),
+        Api::G4F => PromptFormat::G4F(G4FPrompt::from(prompt.clone())),
         Api::AnotherApiForTests => panic!("This api is not made for actual use."),
     };
 
@@ -73,6 +75,13 @@ pub fn post_prompt_and_get_answer(
             "Authorization",
             &format!("Bearer {}", &api_config.get_api_key()),
         ),
+        Api::G4F => request.header(
+            "Authorization",
+            &format!(
+                "Bearer {}",
+                prompt.provider_api_key.unwrap_or("".to_string())
+            ),
+        ),
         Api::AzureOpenai => request.header("api-key", &api_config.get_api_key()),
         Api::Anthropic => request
             .header("x-api-key", &api_config.get_api_key())
@@ -87,7 +96,7 @@ pub fn post_prompt_and_get_answer(
 
     let response_text: String = match prompt.api {
         Api::Ollama => handle_api_response::<OllamaResponse>(request.send()?),
-        Api::Openai | Api::AzureOpenai | Api::Mistral | Api::Groq | Api::Cerebras => {
+        Api::Openai | Api::AzureOpenai | Api::Mistral | Api::Groq | Api::Cerebras | Api::G4F => {
             handle_api_response::<OpenAiResponse>(request.send()?)
         }
         Api::Anthropic => handle_api_response::<AnthropicResponse>(request.send()?),

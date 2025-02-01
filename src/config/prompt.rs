@@ -14,6 +14,9 @@ const CONVERSATION_FILE: &str = "conversation.toml";
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct Prompt {
     pub api: Api,
+    pub provider: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider_api_key: Option<String>,
     pub model: Option<String>,
     pub messages: Vec<Message>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -22,6 +25,8 @@ pub struct Prompt {
     pub char_limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>, // unsuported for now
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub web_search: Option<bool>,
 }
 
 impl Default for Prompt {
@@ -42,10 +47,13 @@ impl Default for Prompt {
         ];
         Prompt {
             api: Api::Ollama,
+            provider: None,
+            provider_api_key: None,
             model: None,
             temperature: None,
             messages,
             stream: None,
+            web_search: None,
             char_limit: Some(50000),
         }
     }
@@ -56,10 +64,13 @@ impl Prompt {
         let default_prompt = Prompt::default();
         Prompt {
             api: default_prompt.api,
+            provider: None,
+            provider_api_key: None,
             model: default_prompt.model,
             temperature: None,
             messages: vec![],
             stream: None,
+            web_search: None,
             char_limit: Some(50000),
         }
     }

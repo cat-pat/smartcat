@@ -66,6 +66,9 @@ struct PromptParams {
     /// overrides which api to hit
     #[arg(long)]
     api: Option<Api>,
+    /// overrides which provider (of the g4f api) to use
+    #[arg(short, long)]
+    provider: Option<String>,
     /// overrides which model (of the api) to use
     #[arg(short, long)]
     model: Option<String>,
